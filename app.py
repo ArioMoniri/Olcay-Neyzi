@@ -53,7 +53,7 @@ if st.button("Grafikte Göster"):
                                    height_points[i][1], height_points[i+1][1])
         return height_points[-1][1] if height > 180 else height_points[0][1]
     
-    # Calibrated Weight -> Y pixel calculation
+    # Calibrated Weight -> Y pixel calculation (for the lower part)
     weight_points = [
         (0, 125), (5, 162), (50, 188), (77.5, 174)  # Based on the updated calibration
     ]
@@ -73,10 +73,10 @@ if st.button("Grafikte Göster"):
     # Offset for gender-specific graphs
     gender_offset = 0 if gender == "Kız" else 320  # Roughly half the graph width
     
-    # Plot the height-age point (upper graph)
+    # Plot the height-age point (upper graph for height)
     img_with_point = plot_point(img.copy(), age_pixel_x + gender_offset, height_pixel_y, color="blue")
     
-    # Plot the weight-age point (lower graph)
+    # Plot the weight-age point (lower graph for weight, offset by 210 pixels for the lower section)
     img_with_point = plot_point(img_with_point, age_pixel_x + gender_offset, weight_pixel_y + 210, color="green")
     
     st.image(img_with_point, caption="Büyüme Eğrisi Üzerinde İşaretlenmiş Noktalar", use_column_width=True)

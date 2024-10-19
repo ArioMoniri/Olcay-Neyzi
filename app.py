@@ -39,8 +39,10 @@ def girl_height_to_pixel(height):
     return int(height_bottom - ((height - 55) * 17) / 2.5)  # 17 piksel her 2.5 cm için
 
 def girl_weight_to_pixel(weight):
-    weight_bottom, weight_top = 1331, 740
-    return int(weight_bottom - (weight * (weight_bottom - weight_top) / 50))
+    weight_bottom, weight_top = 1331, 738
+    weight_left, weight_right = 62, 874
+    pixels_per_kg = 7.8
+    return int(weight_bottom - (weight - 1.5) * pixels_per_kg)
 
 # Erkek grafiği için fonksiyonlar
 def boy_age_to_pixel(age):
@@ -56,7 +58,7 @@ def boy_height_to_pixel(height):
 
 def boy_weight_to_pixel(weight):
     weight_bottom, weight_top = 1339, 776
-    return int(weight_bottom - (weight * 6))  # Her kilo için 6 pixel
+    return int(weight_bottom - ((weight - 1) * 6))  # Her kilo için 6 pixel, 1 kg'dan başlıyor
 
 st.title("Türk Çocuklarının Persentil Büyüme Eğrileri")
 
@@ -68,14 +70,14 @@ if gender == "Kız":
     height_to_pixel = girl_height_to_pixel
     weight_to_pixel = girl_weight_to_pixel
     height_min, height_max = 55.0, 180.0
-    weight_min, weight_max = 2.0, 50.0
+    weight_min, weight_max = 1.5, 75.0  # Kızlar için ağırlık aralığı
 else:
     img = load_image(boy_image_url)
     age_to_pixel = boy_age_to_pixel
     height_to_pixel = boy_height_to_pixel
     weight_to_pixel = boy_weight_to_pixel
     height_min, height_max = 57.5, 185.0
-    weight_min, weight_max = 2.0, 98.0
+    weight_min, weight_max = 1.0, 98.0  # Erkekler için ağırlık aralığı
 
 birth_date = st.date_input("Doğum Tarihi", min_value=date(2000, 1, 1), max_value=date.today())
 
@@ -86,7 +88,7 @@ if 'exams' not in st.session_state:
 # Yeni muayene ekleme
 st.subheader("Yeni Muayene Ekle")
 exam_date = st.date_input("Muayene Tarihi", min_value=birth_date, max_value=date.today())
-height = st.number_input("Boy (cm)", min_value=height_min, max_value=height_max, step=2.0)
+height = st.number_input("Boy (cm)", min_value=height_min, max_value=height_max, step=2.5)
 weight = st.number_input("Ağırlık (kg)", min_value=weight_min, max_value=weight_max, step=1.0)
 
 if st.button("Muayene Ekle"):

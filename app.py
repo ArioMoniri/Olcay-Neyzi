@@ -30,26 +30,30 @@ weight = st.number_input("Ağırlık (kg)", min_value=2.0, max_value=100.0, step
 
 if st.button("Grafikte Göster"):
     img_width, img_height = img.size
-    x_offset = 60
-    y_offset_top = 60
-    y_offset_bottom = 80
-    chart_width = (img_width - 2 * x_offset) // 2
-    chart_height = img_height - y_offset_top - y_offset_bottom
     
-    # Yaş için piksel konumunu hesapla (düzeltilmiş)
+    # Grafik sınırları (piksel olarak)
+    left_border = 60
+    right_border = img_width - 60
+    top_border = 60
+    bottom_border = img_height - 80
+    middle_line = img_height // 2
+    
+    chart_width = (right_border - left_border) // 2
+    
+    # Yaş için piksel konumunu hesapla
     def age_to_pixel(age):
         if age <= 6:
-            return map_value_to_pixel(age * 4, 0, 24, x_offset, x_offset + chart_width // 2)
+            return map_value_to_pixel(age, 0, 6, left_border, left_border + chart_width // 2)
         else:
-            return map_value_to_pixel(age - 6, 0, 12, x_offset + chart_width // 2, x_offset + chart_width)
+            return map_value_to_pixel(age, 6, 18, left_border + chart_width // 2, left_border + chart_width)
     
     age_pixel_x = age_to_pixel(age)
 
-    # Boy için piksel konumunu hesapla
-    height_pixel_y = map_value_to_pixel(height, 55, 180, img_height - y_offset_bottom, y_offset_top)
+    # Boy için piksel konumunu hesapla (üst grafik)
+    height_pixel_y = map_value_to_pixel(height, 55, 180, middle_line, top_border)
     
-    # Ağırlık için piksel konumunu hesapla
-    weight_pixel_y = map_value_to_pixel(weight, 0, 80, img_height - y_offset_bottom, img_height // 2)
+    # Ağırlık için piksel konumunu hesapla (alt grafik)
+    weight_pixel_y = map_value_to_pixel(weight, 0, 80, bottom_border, middle_line)
     
     # Cinsiyet için x pozisyonu
     gender_offset = 0 if gender == "Kız" else chart_width

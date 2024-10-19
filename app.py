@@ -58,8 +58,8 @@ if 'exams' not in st.session_state:
 # Yeni muayene ekleme
 st.subheader("Yeni Muayene Ekle")
 exam_date = st.date_input("Muayene Tarihi", min_value=birth_date, max_value=date.today())
-height = st.number_input("Boy (cm)", min_value=55.0, max_value=185.0, step=0.5)
-weight = st.number_input("Ağırlık (kg)", min_value=2.0, max_value=98.0, step=0.1)
+height = st.number_input("Boy (cm)", min_value=57.5, max_value=185.0, step=2)
+weight = st.number_input("Ağırlık (kg)", min_value=2.0, max_value=98.0, step=1)
 
 if st.button("Muayene Ekle"):
     st.session_state.exams.append({"date": exam_date, "height": height, "weight": weight})

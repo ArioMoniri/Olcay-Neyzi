@@ -60,6 +60,18 @@ def boy_weight_to_pixel(weight):
     weight_bottom, weight_top = 1339, 776
     return int(weight_bottom - ((weight - 1) * 6))  # Her kilo için 6 pixel, 1 kg'dan başlıyor
 
+def save_and_download(img, format, dpi=None):
+    buf = BytesIO()
+    if format == "svg":
+        # PIL SVG kaydetmeyi desteklemez, bu yüzden farklı bir kütüphane gerekebilir
+        st.warning("SVG formatı şu anda desteklenmiyor.")
+        return None
+    elif format == "tiff":
+        img.save(buf, format="TIFF", dpi=(dpi, dpi))
+    else:
+        img.save(buf, format=format.upper())
+    return buf.getvalue()
+
 st.title("Türk Çocuklarının Persentil Büyüme Eğrileri")
 
 gender = st.radio("Cinsiyet", ["Kız", "Erkek"])
@@ -102,9 +114,9 @@ for i, exam in enumerate(st.session_state.exams):
     with col1:
         st.write(f"Tarih: {exam['date']}")
     with col2:
-        new_height = st.number_input(f"Boy {i}", value=exam['height'], key=f"height_{i}")
+        new_height = st.number_input(f"Boy {i}", value=exam['height'], min_value=height_min, max_value=height_max, step=2.5, key=f"height_{i}")
     with col3:
-        new_weight = st.number_input(f"Ağırlık {i}", value=exam['weight'], key=f"weight_{i}")
+        new_weight = st.number_input(f"Ağırlık {i}", value=exam['weight'], min_value=weight_min, max_value=weight_max, step=1.0, key=f"weight_{i}")
     with col4:
         if st.button("Güncelle", key=f"update_{i}"):
             st.session_state.exams[i]['height'] = new_height
@@ -149,13 +161,19 @@ if st.button("Grafikte Göster"):
     
     st.image(img_with_points, caption="Büyüme Eğrisi Üzerinde İşaretlenmiş Noktalar", use_column_width=True)
     
-    buf = BytesIO()
-    img_with_points.save(buf, format="JPEG")
-    byte_im = buf.getvalue()
+    export_as = st.selectbox("Dosya formatı seçin", ["JPG", "PNG", "SVG", "TIFF"])
     
-    st.download_button(
-        label="Grafiği İndir",
-        data=byte_im,
-        file_name="buyume_egrisi.jpg",
-        mime="image/jpeg"
-    )
+    if export_as == "JPG":
+        buffer = save_and_download(img_with_points, "jpeg")
+        st.download_button("JPG İndir", buffer, file_name='buyume_egrisi.jpg', mime='image/jpeg')
+    elif export_as == "PNG":
+        buffer = save_and_download(img_with_points, "png")
+        st.download_button("PNG İndir", buffer, file_name='buyume_egrisi.png', mime='image/png')
+    elif export_as == "SVG":
+        buffer = save_and_download(img_with_points, "svg")
+        if buffer:
+            st.download_button("SVG İndir", buffer, file_name='buyume_egrisi.svg', mime='image/svg+xml')
+    elif export_as == "TIFF":
+        dpi = st.slider("TIFF için DPI seçin", min_value=100, max_value=1200, value=600, step=50)
+        buffer = save_and_download(img_with_points, "tiff", dpi=dpi)
+        st.download_button("TIFF İndir", buffer, file_name='buyume_egrisi.tiff', mime='image/tiff')

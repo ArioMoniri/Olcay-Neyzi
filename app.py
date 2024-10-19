@@ -51,13 +51,13 @@ if st.button("Grafikte Göster"):
 
     # Boy için piksel konumunu hesapla
     def height_to_pixel(height):
-        return map_value_to_pixel(height, 40, 120, middle_line - 30, top_border)
+        return map_value_to_pixel(height, 40, 180, middle_line - 30, top_border)
 
     height_pixel_y = height_to_pixel(height)
     
     # Ağırlık için piksel konumunu hesapla
     def weight_to_pixel(weight):
-        return map_value_to_pixel(weight, 0, 30, bottom_border, middle_line)
+        return map_value_to_pixel(weight, 0, 50, bottom_border, middle_line)
 
     weight_pixel_y = weight_to_pixel(weight)
     

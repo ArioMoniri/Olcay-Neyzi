@@ -173,8 +173,11 @@ if st.button("Grafikte Göster"):
         # Ağırlık-yaş noktasını çiz
         img_with_points = plot_point(img_with_points, age_pixel_x, weight_pixel_y, color=selected_color, size=point_size, label=label)
     
+    st.session_state.img_with_points = img_with_points
     st.image(img_with_points, caption="Büyüme Eğrisi Üzerinde İşaretlenmiş Noktalar", use_column_width=True)
-    
+
+# Eğer grafik oluşturulduysa, indirme seçeneklerini göster
+if 'img_with_points' in st.session_state:
     export_as = st.selectbox("Dosya formatı seçin", ["JPG", "PNG", "SVG", "TIFF"])
     
     if export_as == "TIFF":
@@ -182,13 +185,13 @@ if st.button("Grafikte Göster"):
     
     if st.button("Grafiği İndir"):
         if export_as == "JPG":
-            buffer = save_and_download(img_with_points, "jpeg")
+            buffer = save_and_download(st.session_state.img_with_points, "jpeg")
             st.download_button("JPG İndir", buffer, file_name='buyume_egrisi.jpg', mime='image/jpeg')
         elif export_as == "PNG":
-            buffer = save_and_download(img_with_points, "png")
+            buffer = save_and_download(st.session_state.img_with_points, "png")
             st.download_button("PNG İndir", buffer, file_name='buyume_egrisi.png', mime='image/png')
         elif export_as == "SVG":
             st.warning("SVG formatı şu anda desteklenmiyor.")
         elif export_as == "TIFF":
-            buffer = save_and_download(img_with_points, "tiff", dpi=dpi)
+            buffer = save_and_download(st.session_state.img_with_points, "tiff", dpi=dpi)
             st.download_button("TIFF İndir", buffer, file_name='buyume_egrisi.tiff', mime='image/tiff')

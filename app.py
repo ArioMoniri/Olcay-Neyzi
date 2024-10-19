@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import numpy as np
 from datetime import datetime, date
@@ -15,9 +15,12 @@ def load_image(url):
 def map_value_to_pixel(value, min_val, max_val, min_pixel, max_pixel):
     return int(min_pixel + (value - min_val) / (max_val - min_val) * (max_pixel - min_pixel))
 
-def plot_point(img, x, y, color="black", size=5):
+def plot_point(img, x, y, color="black", size=5, label=None, font_size=12):
     draw = ImageDraw.Draw(img)
     draw.ellipse([x-size, y-size, x+size, y+size], fill=color)
+    if label:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
+        draw.text((x+size+2, y-size-2), label, fill=color, font=font)
     return img
 
 def calculate_age(born, exam_date):
@@ -30,18 +33,32 @@ st.title("Türk Çocuklarının Persentil Büyüme Eğrileri")
 img = load_image(image_url)
 
 gender = st.radio("Cinsiyet", ["Kız", "Erkek"])
+birth_date = st.date_input("Doğum Tarihi", min_value=date(2000, 1, 1), max_value=date.today())
 
-col1, col2 = st.columns(2)
-with col1:
-    birth_date = st.date_input("Doğum Tarihi", min_value=date(2000, 1, 1), max_value=date.today())
-with col2:
-    exam_date = st.date_input("Muayene Tarihi", min_value=birth_date, max_value=date.today())
+# Muayene bilgilerini saklamak için bir liste
+exams = []
 
-age = calculate_age(birth_date, exam_date)
-st.write(f"Hesaplanan Yaş: {age:.2f} yıl")
-
+# Yeni muayene ekleme
+st.subheader("Yeni Muayene Ekle")
+exam_date = st.date_input("Muayene Tarihi", min_value=birth_date, max_value=date.today())
 height = st.number_input("Boy (cm)", min_value=55.0, max_value=180.0, step=0.5)
 weight = st.number_input("Ağırlık (kg)", min_value=2.0, max_value=100.0, step=0.1)
+
+if st.button("Muayene Ekle"):
+    exams.append({"date": exam_date, "height": height, "weight": weight})
+    st.success("Muayene başarıyla eklendi!")
+
+# Mevcut muayeneleri göster
+st.subheader("Mevcut Muayeneler")
+for i, exam in enumerate(exams):
+    st.write(f"Muayene {i+1}: Tarih: {exam['date']}, Boy: {exam['height']} cm, Ağırlık: {exam['weight']} kg")
+
+# Etiketleme seçenekleri
+label_option = st.radio("Nokta Etiketleme Seçeneği", 
+                        ["Muayene Numarası", "Muayene Tarihi", "Özel Etiket", "Etiket Yok"])
+
+if label_option == "Özel Etiket":
+    custom_label = st.text_input("Özel Etiket Girin")
 
 if st.button("Grafikte Göster"):
     img_width, img_height = img.size
@@ -70,34 +87,44 @@ if st.button("Grafikte Göster"):
         months = (age - 0.25) * 12  # Girilen yaşı aya çevir
         return int(age_left + (months * total_pixels) / total_months)
     
-    age_pixel_x = age_to_pixel(age)
-    
     # Boy için piksel konumunu hesapla
     def height_to_pixel(height):
         return int(height_bottom - ((height - 55) * 17) / 2.5)  # 17 piksel her 2.5 cm için
     
-    height_pixel_y = height_to_pixel(height)
-    
     # Ağırlık için piksel konumunu hesapla
     def weight_to_pixel(weight):
-        # Bu fonksiyonu ağırlık değerlerine göre ayarlamanız gerekebilir
         return map_value_to_pixel(weight, 0, 100, weight_bottom, weight_top)
-    
-    weight_pixel_y = weight_to_pixel(weight)
     
     # Cinsiyet için x pozisyonu
     gender_offset = 0 if gender == "Kız" else img_width // 2
     
-    # Boy-yaş noktasını çiz (üst grafik)
-    img_with_point = plot_point(img.copy(), age_pixel_x + gender_offset, height_pixel_y, color="black")
+    img_with_points = img.copy()
     
-    # Ağırlık-yaş noktasını çiz (alt grafik)
-    img_with_point = plot_point(img_with_point, age_pixel_x + gender_offset, weight_pixel_y, color="black")
+    for i, exam in enumerate(exams):
+        age = calculate_age(birth_date, exam['date'])
+        age_pixel_x = age_to_pixel(age)
+        height_pixel_y = height_to_pixel(exam['height'])
+        weight_pixel_y = weight_to_pixel(exam['weight'])
+        
+        if label_option == "Muayene Numarası":
+            label = str(i+1)
+        elif label_option == "Muayene Tarihi":
+            label = exam['date'].strftime("%d/%m/%Y")
+        elif label_option == "Özel Etiket":
+            label = custom_label
+        else:
+            label = None
+        
+        # Boy-yaş noktasını çiz (üst grafik)
+        img_with_points = plot_point(img_with_points, age_pixel_x + gender_offset, height_pixel_y, label=label)
+        
+        # Ağırlık-yaş noktasını çiz (alt grafik)
+        img_with_points = plot_point(img_with_points, age_pixel_x + gender_offset, weight_pixel_y, label=label)
     
-    st.image(img_with_point, caption="Büyüme Eğrisi Üzerinde İşaretlenmiş Noktalar", use_column_width=True)
+    st.image(img_with_points, caption="Büyüme Eğrisi Üzerinde İşaretlenmiş Noktalar", use_column_width=True)
     
     buf = BytesIO()
-    img_with_point.save(buf, format="JPEG")
+    img_with_points.save(buf, format="JPEG")
     byte_im = buf.getvalue()
     
     st.download_button(

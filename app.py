@@ -26,28 +26,56 @@ def calculate_age(born, exam_date):
     months = (exam_date.month - born.month) % 12 + (12 if exam_date.day < born.day else 0)
     return age + months / 12
 
+# Kız grafiği için fonksiyonlar
+def girl_age_to_pixel(age):
+    age_left, age_right = 61, 874
+    total_months = (18.75 - 0.25) * 12  # 18.5 yıl = 222 ay
+    total_pixels = age_right - age_left  # 813 piksel
+    months = (age - 0.25) * 12  # Girilen yaşı aya çevir
+    return int(age_left + (months * total_pixels) / total_months)
+
+def girl_height_to_pixel(height):
+    height_bottom, height_top = 914, 60
+    return int(height_bottom - ((height - 55) * 17) / 2.5)  # 17 piksel her 2.5 cm için
+
+def girl_weight_to_pixel(weight):
+    weight_bottom, weight_top = 1331, 740
+    return int(weight_bottom - (weight * (weight_bottom - weight_top) / 50))
+
+# Erkek grafiği için fonksiyonlar
+def boy_age_to_pixel(age):
+    age_left, age_right = 96, 900
+    total_months = (18.75 - 0.25) * 12  # 18.5 yıl = 222 ay
+    total_pixels = age_right - age_left
+    months = (age - 0.25) * 12  # Girilen yaşı aya çevir
+    return int(age_left + (months * total_pixels) / total_months)
+
+def boy_height_to_pixel(height):
+    height_bottom, height_top = 951, 63
+    return int(height_bottom - ((height - 57.5) * 17) / 2.5)  # 17 piksel her 2.5 cm için
+
+def boy_weight_to_pixel(weight):
+    weight_bottom, weight_top = 1339, 776
+    return int(weight_bottom - (weight * 6))  # Her kilo için 6 pixel
+
 st.title("Türk Çocuklarının Persentil Büyüme Eğrileri")
 
 gender = st.radio("Cinsiyet", ["Kız", "Erkek"])
 
 if gender == "Kız":
     img = load_image(girl_image_url)
-    # Kız grafiği için ölçüler
-    age_left, age_right = 61, 874
-    age_bottom = 1329
-    height_left, height_right = 61, 873
-    height_top, height_bottom = 60, 914
-    weight_left, weight_right = 61, 872
-    weight_top, weight_bottom = 740, 1331
+    age_to_pixel = girl_age_to_pixel
+    height_to_pixel = girl_height_to_pixel
+    weight_to_pixel = girl_weight_to_pixel
+    height_min, height_max = 55.0, 180.0
+    weight_min, weight_max = 2.0, 50.0
 else:
     img = load_image(boy_image_url)
-    # Erkek grafiği için ölçüler
-    age_left, age_right = 96, 900
-    age_bottom = 1339
-    height_left, height_right = 96, 901
-    height_top, height_bottom = 63, 951
-    weight_left, weight_right = 97, 901
-    weight_top, weight_bottom = 776, 1339
+    age_to_pixel = boy_age_to_pixel
+    height_to_pixel = boy_height_to_pixel
+    weight_to_pixel = boy_weight_to_pixel
+    height_min, height_max = 57.5, 185.0
+    weight_min, weight_max = 2.0, 98.0
 
 birth_date = st.date_input("Doğum Tarihi", min_value=date(2000, 1, 1), max_value=date.today())
 
@@ -58,8 +86,8 @@ if 'exams' not in st.session_state:
 # Yeni muayene ekleme
 st.subheader("Yeni Muayene Ekle")
 exam_date = st.date_input("Muayene Tarihi", min_value=birth_date, max_value=date.today())
-height = st.number_input("Boy (cm)", min_value=57.5, max_value=185.0, step=2.0)
-weight = st.number_input("Ağırlık (kg)", min_value=2.0, max_value=98.0, step=1.0)
+height = st.number_input("Boy (cm)", min_value=height_min, max_value=height_max, step=2.0)
+weight = st.number_input("Ağırlık (kg)", min_value=weight_min, max_value=weight_max, step=1.0)
 
 if st.button("Muayene Ekle"):
     st.session_state.exams.append({"date": exam_date, "height": height, "weight": weight})
@@ -94,24 +122,6 @@ if label_option == "Özel Etiket":
     custom_label = st.text_input("Özel Etiket Girin")
 
 if st.button("Grafikte Göster"):
-    # Yaş için piksel konumunu hesapla
-    def age_to_pixel(age):
-        total_months = (18.75 - 0.25) * 12  # 18.5 yıl = 222 ay
-        total_pixels = age_right - age_left
-        months = (age - 0.25) * 12  # Girilen yaşı aya çevir
-        return int(age_left + (months * total_pixels) / total_months)
-    
-    # Boy için piksel konumunu hesapla
-    def height_to_pixel(height):
-        return int(height_bottom - ((height - 55) * 17) / 2.5)  # 17 piksel her 2.5 cm için
-    
-    # Ağırlık için piksel konumunu hesapla
-    def weight_to_pixel(weight):
-        if gender == "Kız":
-            return int(weight_bottom - (weight * (weight_bottom - weight_top) / 50))
-        else:
-            return int(weight_bottom - (weight * 6))  # Her kilo için 6 pixel
-    
     img_with_points = img.copy()
     
     for i, exam in enumerate(st.session_state.exams):

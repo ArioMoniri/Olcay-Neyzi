@@ -37,10 +37,13 @@ if st.button("Grafikte Göster"):
     chart_height = img_height - y_offset_top - y_offset_bottom
     
     # Yaş için piksel konumunu hesapla (düzeltilmiş)
-    if age <= 6:
-        age_pixel_x = map_value_to_pixel(age, 0, 6, x_offset, x_offset + chart_width // 2)
-    else:
-        age_pixel_x = map_value_to_pixel(age, 6, 18, x_offset + chart_width // 2, x_offset + chart_width)
+    def age_to_pixel(age):
+        if age <= 6:
+            return map_value_to_pixel(age * 4, 0, 24, x_offset, x_offset + chart_width // 2)
+        else:
+            return map_value_to_pixel(age - 6, 0, 12, x_offset + chart_width // 2, x_offset + chart_width)
+    
+    age_pixel_x = age_to_pixel(age)
 
     # Boy için piksel konumunu hesapla
     height_pixel_y = map_value_to_pixel(height, 55, 180, img_height - y_offset_bottom, y_offset_top)
@@ -51,10 +54,10 @@ if st.button("Grafikte Göster"):
     # Cinsiyet için x pozisyonu
     gender_offset = 0 if gender == "Kız" else chart_width
     
-    # Boy-yaş noktasını çiz
+    # Boy-yaş noktasını çiz (üst grafik)
     img_with_point = plot_point(img.copy(), age_pixel_x + gender_offset, height_pixel_y, color="blue")
     
-    # Ağırlık-yaş noktasını çiz
+    # Ağırlık-yaş noktasını çiz (alt grafik)
     img_with_point = plot_point(img_with_point, age_pixel_x + gender_offset, weight_pixel_y, color="green")
     
     st.image(img_with_point, caption="Büyüme Eğrisi Üzerinde İşaretlenmiş Noktalar", use_column_width=True)

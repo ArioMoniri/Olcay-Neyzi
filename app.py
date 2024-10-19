@@ -36,7 +36,8 @@ gender = st.radio("Cinsiyet", ["Kız", "Erkek"])
 birth_date = st.date_input("Doğum Tarihi", min_value=date(2000, 1, 1), max_value=date.today())
 
 # Muayene bilgilerini saklamak için bir liste
-exams = []
+if 'exams' not in st.session_state:
+    st.session_state.exams = []
 
 # Yeni muayene ekleme
 st.subheader("Yeni Muayene Ekle")
@@ -45,13 +46,29 @@ height = st.number_input("Boy (cm)", min_value=55.0, max_value=180.0, step=0.5)
 weight = st.number_input("Ağırlık (kg)", min_value=2.0, max_value=100.0, step=0.1)
 
 if st.button("Muayene Ekle"):
-    exams.append({"date": exam_date, "height": height, "weight": weight})
+    st.session_state.exams.append({"date": exam_date, "height": height, "weight": weight})
     st.success("Muayene başarıyla eklendi!")
 
-# Mevcut muayeneleri göster
+# Mevcut muayeneleri göster ve düzenleme/silme seçenekleri
 st.subheader("Mevcut Muayeneler")
-for i, exam in enumerate(exams):
-    st.write(f"Muayene {i+1}: Tarih: {exam['date']}, Boy: {exam['height']} cm, Ağırlık: {exam['weight']} kg")
+for i, exam in enumerate(st.session_state.exams):
+    col1, col2, col3, col4, col5 = st.columns([2,2,2,1,1])
+    with col1:
+        st.write(f"Tarih: {exam['date']}")
+    with col2:
+        new_height = st.number_input(f"Boy {i}", value=exam['height'], key=f"height_{i}")
+    with col3:
+        new_weight = st.number_input(f"Ağırlık {i}", value=exam['weight'], key=f"weight_{i}")
+    with col4:
+        if st.button("Güncelle", key=f"update_{i}"):
+            st.session_state.exams[i]['height'] = new_height
+            st.session_state.exams[i]['weight'] = new_weight
+            st.success(f"Muayene {i+1} güncellendi!")
+    with col5:
+        if st.button("Sil", key=f"delete_{i}"):
+            st.session_state.exams.pop(i)
+            st.success(f"Muayene {i+1} silindi!")
+            st.experimental_rerun()
 
 # Etiketleme seçenekleri
 label_option = st.radio("Nokta Etiketleme Seçeneği", 
@@ -100,7 +117,7 @@ if st.button("Grafikte Göster"):
     
     img_with_points = img.copy()
     
-    for i, exam in enumerate(exams):
+    for i, exam in enumerate(st.session_state.exams):
         age = calculate_age(birth_date, exam['date'])
         age_pixel_x = age_to_pixel(age)
         height_pixel_y = height_to_pixel(exam['height'])

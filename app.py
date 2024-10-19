@@ -62,11 +62,7 @@ def boy_weight_to_pixel(weight):
 
 def save_and_download(img, format, dpi=None):
     buf = BytesIO()
-    if format.lower() == "svg":
-        # PIL SVG kaydetmeyi desteklemez, bu yüzden farklı bir kütüphane gerekebilir
-        st.warning("SVG formatı şu anda desteklenmiyor.")
-        return None
-    elif format.lower() == "tiff":
+    if format.lower() == "tiff":
         img.save(buf, format="TIFF", dpi=(dpi, dpi))
     else:
         img.save(buf, format=format.upper())
@@ -174,24 +170,23 @@ if st.button("Grafikte Göster"):
         img_with_points = plot_point(img_with_points, age_pixel_x, weight_pixel_y, color=selected_color, size=point_size, label=label)
     
     st.session_state.img_with_points = img_with_points
-    st.image(img_with_points, caption="Büyüme Eğrisi Üzerinde İşaretlenmiş Noktalar", use_column_width=True)
 
-# Eğer grafik oluşturulduysa, indirme seçeneklerini göster
+# Eğer grafik oluşturulduysa, her zaman göster
 if 'img_with_points' in st.session_state:
-    export_as = st.selectbox("Dosya formatı seçin", ["JPG", "PNG", "SVG", "TIFF"])
+    st.image(st.session_state.img_with_points, caption="Büyüme Eğrisi Üzerinde İşaretlenmiş Noktalar", use_column_width=True)
+
+    export_as = st.selectbox("İndirme formatını seçin", ["JPG", "PNG", "TIFF"])
     
     if export_as == "TIFF":
         dpi = st.slider("TIFF için DPI seçin", min_value=100, max_value=1200, value=600, step=50)
     
-    if st.button("Grafiği İndir"):
-        if export_as == "JPG":
-            buffer = save_and_download(st.session_state.img_with_points, "jpeg")
-            st.download_button("JPG İndir", buffer, file_name='buyume_egrisi.jpg', mime='image/jpeg')
-        elif export_as == "PNG":
-            buffer = save_and_download(st.session_state.img_with_points, "png")
-            st.download_button("PNG İndir", buffer, file_name='buyume_egrisi.png', mime='image/png')
-        elif export_as == "SVG":
-            st.warning("SVG formatı şu anda desteklenmiyor.")
-        elif export_as == "TIFF":
-            buffer = save_and_download(st.session_state.img_with_points, "tiff", dpi=dpi)
-            st.download_button("TIFF İndir", buffer, file_name='buyume_egrisi.tiff', mime='image/tiff')
+    if export_as == "JPG":
+        buffer = save_and_download(st.session_state.img_with_points, "jpeg")
+        st.download_button("JPG Olarak İndir", buffer, file_name='buyume_egrisi.jpg', mime='image/jpeg')
+    elif export_as == "PNG":
+        buffer = save_and_download(st.session_state.img_with_points, "png")
+        st.download_button("PNG Olarak İndir", buffer, file_name='buyume_egrisi.png', mime='image/png')
+    elif export_as == "TIFF":
+        buffer = save_and_download(st.session_state.img_with_points, "tiff", dpi=dpi)
+        st.download_button("TIFF Olarak İndir", buffer, file_name='buyume_egrisi.tiff', mime='image/tiff')
+

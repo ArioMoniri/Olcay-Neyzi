@@ -24,7 +24,7 @@ st.title("Türk Çocuklarının Persentil Büyüme Eğrileri")
 img = load_image(image_url)
 
 gender = st.radio("Cinsiyet", ["Kız", "Erkek"])
-age = st.number_input("Yaş (0-18.75)", min_value=0.0, max_value=18.75, step=0.25)
+age = st.number_input("Yaş (0.25-18.75)", min_value=0.25, max_value=18.75, step=0.25)
 height = st.number_input("Boy (cm)", min_value=55.0, max_value=180.0, step=0.5)
 weight = st.number_input("Ağırlık (kg)", min_value=2.0, max_value=100.0, step=0.1)
 
@@ -50,7 +50,10 @@ if st.button("Grafikte Göster"):
     
     # Yaş için piksel konumunu hesapla
     def age_to_pixel(age):
-        return int(age_left + (age * 44) / 0.75)  # 11 piksel her 3 ay için
+        total_months = (18.75 - 0.25) * 12  # 18.5 yıl = 222 ay
+        total_pixels = age_right - age_left  # 813 piksel
+        months = (age - 0.25) * 12  # Girilen yaşı aya çevir
+        return int(age_left + (months * total_pixels) / total_months)
     
     age_pixel_x = age_to_pixel(age)
     

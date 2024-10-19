@@ -5,15 +5,13 @@ from io import BytesIO
 import numpy as np
 from datetime import datetime, date
 
-image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/bfe8b7c31670f7166370e5eafa2b6d6504258497/ca3f478a-5f03-4028-bdcb-382178bfc56b.jpeg"
+girl_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/bfe8b7c31670f7166370e5eafa2b6d6504258497/ca3f478a-5f03-4028-bdcb-382178bfc56b.jpeg"
+boy_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/c64087ff36b6eac92d5c77af8b9fe498e59f1c76/WhatsApp%20Image%202024-10-19%20at%2021.45.55.jpeg"
 
 def load_image(url):
     response = requests.get(url)
     img = Image.open(BytesIO(response.content))
     return img
-
-def map_value_to_pixel(value, min_val, max_val, min_pixel, max_pixel):
-    return int(min_pixel + (value - min_val) / (max_val - min_val) * (max_pixel - min_pixel))
 
 def plot_point(img, x, y, color="black", size=5, label=None, font_size=12):
     draw = ImageDraw.Draw(img)
@@ -30,9 +28,27 @@ def calculate_age(born, exam_date):
 
 st.title("Türk Çocuklarının Persentil Büyüme Eğrileri")
 
-img = load_image(image_url)
-
 gender = st.radio("Cinsiyet", ["Kız", "Erkek"])
+
+if gender == "Kız":
+    img = load_image(girl_image_url)
+    # Kız grafiği için ölçüler
+    age_left, age_right = 61, 874
+    age_bottom = 1329
+    height_left, height_right = 61, 873
+    height_top, height_bottom = 60, 914
+    weight_left, weight_right = 61, 872
+    weight_top, weight_bottom = 740, 1331
+else:
+    img = load_image(boy_image_url)
+    # Erkek grafiği için ölçüler
+    age_left, age_right = 96, 900
+    age_bottom = 1339
+    height_left, height_right = 96, 901
+    height_top, height_bottom = 63, 951
+    weight_left, weight_right = 97, 901
+    weight_top, weight_bottom = 776, 1339
+
 birth_date = st.date_input("Doğum Tarihi", min_value=date(2000, 1, 1), max_value=date.today())
 
 # Muayene bilgilerini saklamak için bir liste
@@ -42,8 +58,8 @@ if 'exams' not in st.session_state:
 # Yeni muayene ekleme
 st.subheader("Yeni Muayene Ekle")
 exam_date = st.date_input("Muayene Tarihi", min_value=birth_date, max_value=date.today())
-height = st.number_input("Boy (cm)", min_value=55.0, max_value=180.0, step=0.5)
-weight = st.number_input("Ağırlık (kg)", min_value=2.0, max_value=100.0, step=0.1)
+height = st.number_input("Boy (cm)", min_value=55.0, max_value=185.0, step=0.5)
+weight = st.number_input("Ağırlık (kg)", min_value=2.0, max_value=98.0, step=0.1)
 
 if st.button("Muayene Ekle"):
     st.session_state.exams.append({"date": exam_date, "height": height, "weight": weight})
@@ -78,29 +94,10 @@ if label_option == "Özel Etiket":
     custom_label = st.text_input("Özel Etiket Girin")
 
 if st.button("Grafikte Göster"):
-    img_width, img_height = img.size
-    
-    # Yaş grafiği sınırları
-    age_left = 61
-    age_right = 874
-    age_bottom = 1329
-    
-    # Boy grafiği sınırları
-    height_left = 61
-    height_right = 873
-    height_top = 60
-    height_bottom = 914
-    
-    # Ağırlık grafiği sınırları
-    weight_left = 61
-    weight_right = 872
-    weight_top = 740
-    weight_bottom = 1331
-    
     # Yaş için piksel konumunu hesapla
     def age_to_pixel(age):
         total_months = (18.75 - 0.25) * 12  # 18.5 yıl = 222 ay
-        total_pixels = age_right - age_left  # 813 piksel
+        total_pixels = age_right - age_left
         months = (age - 0.25) * 12  # Girilen yaşı aya çevir
         return int(age_left + (months * total_pixels) / total_months)
     
@@ -110,10 +107,10 @@ if st.button("Grafikte Göster"):
     
     # Ağırlık için piksel konumunu hesapla
     def weight_to_pixel(weight):
-        return map_value_to_pixel(weight, 0, 100, weight_bottom, weight_top)
-    
-    # Cinsiyet için x pozisyonu
-    gender_offset = 0 if gender == "Kız" else img_width // 2
+        if gender == "Kız":
+            return int(weight_bottom - (weight * (weight_bottom - weight_top) / 50))
+        else:
+            return int(weight_bottom - (weight * 6))  # Her kilo için 6 pixel
     
     img_with_points = img.copy()
     
@@ -132,11 +129,11 @@ if st.button("Grafikte Göster"):
         else:
             label = None
         
-        # Boy-yaş noktasını çiz (üst grafik)
-        img_with_points = plot_point(img_with_points, age_pixel_x + gender_offset, height_pixel_y, label=label)
+        # Boy-yaş noktasını çiz
+        img_with_points = plot_point(img_with_points, age_pixel_x, height_pixel_y, label=label)
         
-        # Ağırlık-yaş noktasını çiz (alt grafik)
-        img_with_points = plot_point(img_with_points, age_pixel_x + gender_offset, weight_pixel_y, label=label)
+        # Ağırlık-yaş noktasını çiz
+        img_with_points = plot_point(img_with_points, age_pixel_x, weight_pixel_y, label=label)
     
     st.image(img_with_points, caption="Büyüme Eğrisi Üzerinde İşaretlenmiş Noktalar", use_column_width=True)
     

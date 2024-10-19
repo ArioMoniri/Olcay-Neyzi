@@ -3,6 +3,7 @@ import requests
 from PIL import Image, ImageDraw
 from io import BytesIO
 import numpy as np
+from datetime import datetime, date
 
 image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/bfe8b7c31670f7166370e5eafa2b6d6504258497/ca3f478a-5f03-4028-bdcb-382178bfc56b.jpeg"
 
@@ -14,17 +15,31 @@ def load_image(url):
 def map_value_to_pixel(value, min_val, max_val, min_pixel, max_pixel):
     return int(min_pixel + (value - min_val) / (max_val - min_val) * (max_pixel - min_pixel))
 
-def plot_point(img, x, y, color="red", size=5):
+def plot_point(img, x, y, color="black", size=5):
     draw = ImageDraw.Draw(img)
     draw.ellipse([x-size, y-size, x+size, y+size], fill=color)
     return img
+
+def calculate_age(born, exam_date):
+    age = exam_date.year - born.year - ((exam_date.month, exam_date.day) < (born.month, born.day))
+    months = (exam_date.month - born.month) % 12 + (12 if exam_date.day < born.day else 0)
+    return age + months / 12
 
 st.title("Türk Çocuklarının Persentil Büyüme Eğrileri")
 
 img = load_image(image_url)
 
 gender = st.radio("Cinsiyet", ["Kız", "Erkek"])
-age = st.number_input("Yaş (0.25-18.75)", min_value=0.25, max_value=18.75, step=0.25)
+
+col1, col2 = st.columns(2)
+with col1:
+    birth_date = st.date_input("Doğum Tarihi", min_value=date(2000, 1, 1), max_value=date.today())
+with col2:
+    exam_date = st.date_input("Muayene Tarihi", min_value=birth_date, max_value=date.today())
+
+age = calculate_age(birth_date, exam_date)
+st.write(f"Hesaplanan Yaş: {age:.2f} yıl")
+
 height = st.number_input("Boy (cm)", min_value=55.0, max_value=180.0, step=0.5)
 weight = st.number_input("Ağırlık (kg)", min_value=2.0, max_value=100.0, step=0.1)
 
@@ -74,10 +89,10 @@ if st.button("Grafikte Göster"):
     gender_offset = 0 if gender == "Kız" else img_width // 2
     
     # Boy-yaş noktasını çiz (üst grafik)
-    img_with_point = plot_point(img.copy(), age_pixel_x + gender_offset, height_pixel_y, color="blue")
+    img_with_point = plot_point(img.copy(), age_pixel_x + gender_offset, height_pixel_y, color="black")
     
     # Ağırlık-yaş noktasını çiz (alt grafik)
-    img_with_point = plot_point(img_with_point, age_pixel_x + gender_offset, weight_pixel_y, color="green")
+    img_with_point = plot_point(img_with_point, age_pixel_x + gender_offset, weight_pixel_y, color="black")
     
     st.image(img_with_point, caption="Büyüme Eğrisi Üzerinde İşaretlenmiş Noktalar", use_column_width=True)
     

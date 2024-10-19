@@ -106,6 +106,7 @@ if st.button("Muayene Ekle"):
 
 # Mevcut muayeneleri göster ve düzenleme/silme seçenekleri
 st.subheader("Mevcut Muayeneler")
+updated_exams = st.session_state.exams.copy()  # Mevcut muayenelerin bir kopyasını oluştur
 for i, exam in enumerate(st.session_state.exams):
     col1, col2, col3, col4, col5 = st.columns([2,2,2,1,1])
     with col1:
@@ -116,14 +117,16 @@ for i, exam in enumerate(st.session_state.exams):
         new_weight = st.number_input(f"Ağırlık {i}", value=exam['weight'], min_value=weight_min, max_value=weight_max, step=1.0, key=f"weight_{i}")
     with col4:
         if st.button("Güncelle", key=f"update_{i}"):
-            st.session_state.exams[i]['height'] = new_height
-            st.session_state.exams[i]['weight'] = new_weight
+            updated_exams[i]['height'] = new_height
+            updated_exams[i]['weight'] = new_weight
             st.success(f"Muayene {i+1} güncellendi!")
     with col5:
         if st.button("Sil", key=f"delete_{i}"):
-            st.session_state.exams.pop(i)
+            del updated_exams[i]
             st.success(f"Muayene {i+1} silindi!")
-            st.experimental_rerun()
+
+# Güncellenmiş muayene listesini session state'e kaydet
+st.session_state.exams = updated_exams
 
 # Etiketleme seçenekleri
 label_option = st.radio("Nokta Etiketleme Seçeneği", 

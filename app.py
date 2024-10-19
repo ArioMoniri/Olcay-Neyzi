@@ -40,20 +40,30 @@ if st.button("Grafikte Göster"):
     
     chart_width = (right_border - left_border) // 2
     
-    # Yaş için piksel konumunu hesapla
+    # Yaş için piksel konumunu hesapla (2.5 ay = 1 küçük kare)
     def age_to_pixel(age):
+        months = age * 12
+        small_squares = months / 2.5
         if age <= 6:
-            return map_value_to_pixel(age, 0, 6, left_border, left_border + chart_width // 2)
+            return map_value_to_pixel(small_squares, 0, 6*12/2.5, left_border, left_border + chart_width // 2)
         else:
-            return map_value_to_pixel(age, 6, 18, left_border + chart_width // 2, left_border + chart_width)
+            return map_value_to_pixel(small_squares - 6*12/2.5, 0, 12*12/2.5, left_border + chart_width // 2, left_border + chart_width)
     
     age_pixel_x = age_to_pixel(age)
 
-    # Boy için piksel konumunu hesapla (üst grafik)
-    height_pixel_y = map_value_to_pixel(height, 55, 180, middle_line, top_border)
+    # Boy için piksel konumunu hesapla (2.5 cm = 1 küçük kare)
+    def height_to_pixel(height):
+        small_squares = (height - 55) / 2.5
+        return map_value_to_pixel(small_squares, 0, (180-55)/2.5, middle_line, top_border)
+
+    height_pixel_y = height_to_pixel(height)
     
-    # Ağırlık için piksel konumunu hesapla (alt grafik)
-    weight_pixel_y = map_value_to_pixel(weight, 0, 80, bottom_border, middle_line)
+    # Ağırlık için piksel konumunu hesapla (1 kg = 1 küçük kare)
+    def weight_to_pixel(weight):
+        small_squares = weight
+        return map_value_to_pixel(small_squares, 0, 80, bottom_border, middle_line)
+
+    weight_pixel_y = weight_to_pixel(weight)
     
     # Cinsiyet için x pozisyonu
     gender_offset = 0 if gender == "Kız" else chart_width

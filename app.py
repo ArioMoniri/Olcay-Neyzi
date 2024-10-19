@@ -62,15 +62,16 @@ def boy_weight_to_pixel(weight):
 
 def save_and_download(img, format, dpi=None):
     buf = BytesIO()
-    if format == "svg":
+    if format.lower() == "svg":
         # PIL SVG kaydetmeyi desteklemez, bu yüzden farklı bir kütüphane gerekebilir
         st.warning("SVG formatı şu anda desteklenmiyor.")
         return None
-    elif format == "tiff":
+    elif format.lower() == "tiff":
         img.save(buf, format="TIFF", dpi=(dpi, dpi))
     else:
         img.save(buf, format=format.upper())
-    return buf.getvalue()
+    buf.seek(0)
+    return buf
 
 st.title("Türk Çocuklarının Persentil Büyüme Eğrileri")
 
@@ -135,6 +136,19 @@ label_option = st.radio("Nokta Etiketleme Seçeneği",
 if label_option == "Özel Etiket":
     custom_label = st.text_input("Özel Etiket Girin")
 
+# Nokta rengi ve boyutu seçimi
+col1, col2 = st.columns(2)
+with col1:
+    point_color = st.selectbox("Nokta rengi seçin", 
+                               ["Siyah", "Kırmızı", "Mavi", "Yeşil", "Mor"],
+                               format_func=lambda x: {"Siyah": "⚫", "Kırmızı": "🔴", "Mavi": "🔵", "Yeşil": "🟢", "Mor": "🟣"}[x])
+with col2:
+    point_size = st.slider("Nokta boyutu seçin", min_value=1, max_value=10, value=5)
+
+# Renk seçimini İngilizce'ye çevir (PIL için)
+color_map = {"Siyah": "black", "Kırmızı": "red", "Mavi": "blue", "Yeşil": "green", "Mor": "purple"}
+selected_color = color_map[point_color]
+
 if st.button("Grafikte Göster"):
     img_with_points = img.copy()
     
@@ -154,26 +168,27 @@ if st.button("Grafikte Göster"):
             label = None
         
         # Boy-yaş noktasını çiz
-        img_with_points = plot_point(img_with_points, age_pixel_x, height_pixel_y, label=label)
+        img_with_points = plot_point(img_with_points, age_pixel_x, height_pixel_y, color=selected_color, size=point_size, label=label)
         
         # Ağırlık-yaş noktasını çiz
-        img_with_points = plot_point(img_with_points, age_pixel_x, weight_pixel_y, label=label)
+        img_with_points = plot_point(img_with_points, age_pixel_x, weight_pixel_y, color=selected_color, size=point_size, label=label)
     
     st.image(img_with_points, caption="Büyüme Eğrisi Üzerinde İşaretlenmiş Noktalar", use_column_width=True)
     
     export_as = st.selectbox("Dosya formatı seçin", ["JPG", "PNG", "SVG", "TIFF"])
     
-    if export_as == "JPG":
-        buffer = save_and_download(img_with_points, "jpeg")
-        st.download_button("JPG İndir", buffer, file_name='buyume_egrisi.jpg', mime='image/jpeg')
-    elif export_as == "PNG":
-        buffer = save_and_download(img_with_points, "png")
-        st.download_button("PNG İndir", buffer, file_name='buyume_egrisi.png', mime='image/png')
-    elif export_as == "SVG":
-        buffer = save_and_download(img_with_points, "svg")
-        if buffer:
-            st.download_button("SVG İndir", buffer, file_name='buyume_egrisi.svg', mime='image/svg+xml')
-    elif export_as == "TIFF":
+    if export_as == "TIFF":
         dpi = st.slider("TIFF için DPI seçin", min_value=100, max_value=1200, value=600, step=50)
-        buffer = save_and_download(img_with_points, "tiff", dpi=dpi)
-        st.download_button("TIFF İndir", buffer, file_name='buyume_egrisi.tiff', mime='image/tiff')
+    
+    if st.button("Grafiği İndir"):
+        if export_as == "JPG":
+            buffer = save_and_download(img_with_points, "jpeg")
+            st.download_button("JPG İndir", buffer, file_name='buyume_egrisi.jpg', mime='image/jpeg')
+        elif export_as == "PNG":
+            buffer = save_and_download(img_with_points, "png")
+            st.download_button("PNG İndir", buffer, file_name='buyume_egrisi.png', mime='image/png')
+        elif export_as == "SVG":
+            st.warning("SVG formatı şu anda desteklenmiyor.")
+        elif export_as == "TIFF":
+            buffer = save_and_download(img_with_points, "tiff", dpi=dpi)
+            st.download_button("TIFF İndir", buffer, file_name='buyume_egrisi.tiff', mime='image/tiff')

@@ -24,14 +24,14 @@ st.title("Türk Çocuklarının Persentil Büyüme Eğrileri")
 img = load_image(image_url)
 
 gender = st.radio("Cinsiyet", ["Kız", "Erkek"])
-age = st.number_input("Yaş (0-18)", min_value=0.0, max_value=19.0, step=0.1)
+age = st.number_input("Yaş (0-18)", min_value=0.0, max_value=18.0, step=0.1)
 height = st.number_input("Boy (cm)", min_value=40.0, max_value=200.0, step=0.1)
 weight = st.number_input("Ağırlık (kg)", min_value=0.0, max_value=100.0, step=0.1)
 
 if st.button("Grafikte Göster"):
     # Yaş için piksel hesaplaması
     age_points = [
-        (0, 125), (1, 128), (6, 188), (18, 99), (19, 130)
+        (0, 125), (1, 128), (6, 188), (18, 99)
     ]
     
     def age_to_pixel(age):
@@ -39,7 +39,7 @@ if st.button("Grafikte Göster"):
             if age_points[i][0] <= age <= age_points[i+1][0]:
                 return interpolate(age, age_points[i][0], age_points[i+1][0], 
                                    age_points[i][1], age_points[i+1][1])
-        return age_points[-1][1]  # 19 yaş üstü için son nokta
+        return age_points[-1][1]  # 18 yaş üstü için son nokta
     
     # Boy için piksel hesaplaması
     height_points = [
@@ -76,7 +76,7 @@ if st.button("Grafikte Göster"):
     img_with_point = plot_point(img.copy(), age_pixel_x + gender_offset, height_pixel_y, color="blue")
     
     # Ağırlık-yaş noktasını çiz (alt grafik)
-    img_with_point = plot_point(img_with_point, age_pixel_x + gender_offset, weight_pixel_y, color="green")
+    img_with_point = plot_point(img_with_point, age_pixel_x + gender_offset, weight_pixel_y + 210, color="green")
     
     st.image(img_with_point, caption="Büyüme Eğrisi Üzerinde İşaretlenmiş Noktalar", use_column_width=True)
     

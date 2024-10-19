@@ -11,9 +11,6 @@ def load_image(url):
     img = Image.open(BytesIO(response.content))
     return img
 
-def map_value_to_pixel(value, min_val, max_val, min_pixel, max_pixel):
-    return int(min_pixel + (value - min_val) / (max_val - min_val) * (max_pixel - min_pixel))
-
 def plot_point(img, x, y, color="red", size=5):
     draw = ImageDraw.Draw(img)
     draw.ellipse([x-size, y-size, x+size, y+size], fill=color)
@@ -31,38 +28,49 @@ weight = st.number_input("Ağırlık (kg)", min_value=2.0, max_value=100.0, step
 if st.button("Grafikte Göster"):
     img_width, img_height = img.size
     
-    # Grafik sınırları (piksel olarak)
-    left_border = 60
-    right_border = img_width - 60
-    top_border = 60
-    bottom_border = img_height - 80
-    middle_line = img_height // 2
+    # Grafik köşe noktaları
+    left_up = (77, 75, 70)
+    right_up = (87, 80, 77)
+    left_down = (135, 128, 121)
+    right_down = (130, 124, 120)
     
-    chart_width = (right_border - left_border) // 2
+    # Yaş için piksel hesaplaması
+    age_pixels_per_box = 30  # 79 - 49 = 30 piksel (bir kutu)
+    months_per_box = 2.5
+    pixels_per_month = age_pixels_per_box / months_per_box
     
-    # Yaş için piksel konumunu hesapla
     def age_to_pixel(age):
-        if age <= 6:
-            return map_value_to_pixel(age, 0, 6, left_border, left_border + chart_width // 2)
-        else:
-            return map_value_to_pixel(age, 6, 18, left_border + chart_width // 2, left_border + chart_width)
+        months = age * 12
+        x_offset = left_up[0]
+        x_pixel = x_offset + (months * pixels_per_month)
+        return min(x_pixel, right_up[0])
+    
+    # Boy için piksel hesaplaması
+    height_pixels_per_box = 4  # 212 - 208 = 4 piksel (bir kutu)
+    cm_per_box = 2.5
+    pixels_per_cm = height_pixels_per_box / cm_per_box
+    
+    def height_to_pixel(height):
+        y_offset = left_down[1]
+        y_pixel = y_offset - ((height - 55) * pixels_per_cm)  # 55 cm grafiğin alt sınırı
+        return max(y_pixel, left_up[1])
+    
+    # Ağırlık için piksel hesaplaması
+    weight_pixels_per_box = 4  # 212 - 208 = 4 piksel (bir kutu)
+    kg_per_box = 1
+    pixels_per_kg = weight_pixels_per_box / kg_per_box
+    
+    def weight_to_pixel(weight):
+        y_offset = left_down[1]
+        y_pixel = y_offset - (weight * pixels_per_kg)
+        return max(y_pixel, (left_down[1] + left_up[1]) / 2)
     
     age_pixel_x = age_to_pixel(age)
-
-    # Boy için piksel konumunu hesapla
-    def height_to_pixel(height):
-        return map_value_to_pixel(height, 40, 180, middle_line - 30, top_border)
-
     height_pixel_y = height_to_pixel(height)
-    
-    # Ağırlık için piksel konumunu hesapla
-    def weight_to_pixel(weight):
-        return map_value_to_pixel(weight, 0, 50, bottom_border, middle_line)
-
     weight_pixel_y = weight_to_pixel(weight)
     
     # Cinsiyet için x pozisyonu
-    gender_offset = 0 if gender == "Kız" else chart_width
+    gender_offset = 0 if gender == "Kız" else (right_up[0] - left_up[0])
     
     # Boy-yaş noktasını çiz (üst grafik)
     img_with_point = plot_point(img.copy(), age_pixel_x + gender_offset, height_pixel_y, color="blue")

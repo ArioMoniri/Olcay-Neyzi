@@ -75,6 +75,10 @@ def boy_weight_to_pixel(weight):
 
 def save_and_download(img, format, dpi=None):
     buf = BytesIO()
+    # Convert RGBA to RGB if needed
+    if img.mode == 'RGBA':
+        img = img.convert('RGB')
+        
     if format.lower() == "tiff":
         img.save(buf, format="TIFF", dpi=(dpi, dpi))
     else:

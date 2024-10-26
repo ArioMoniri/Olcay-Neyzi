@@ -115,8 +115,8 @@ if 'exams' not in st.session_state:
 # Yeni muayene ekleme
 st.subheader("Yeni Muayene Ekle")
 exam_date = st.date_input("Muayene Tarihi", min_value=birth_date, max_value=date.today())
-height = st.number_input("Boy (cm)", min_value=height_min, max_value=height_max, step=2.5)
-weight = st.number_input("Ağırlık (kg)", min_value=weight_min, max_value=weight_max, step=1.0)
+height = st.number_input("Boy (cm)", min_value=height_min, max_value=height_max, step=2.5,value=50)
+weight = st.number_input("Ağırlık (kg)", min_value=weight_min, max_value=weight_max, step=1.0,value=2.5)
 
 if st.button("Muayene Ekle"):
     st.session_state.exams.append({"date": exam_date, "height": height, "weight": weight})
@@ -160,7 +160,7 @@ with col1:
                                ["Siyah", "Kırmızı", "Mavi", "Yeşil", "Mor"],
                                format_func=lambda x: {"Siyah": "⚫", "Kırmızı": "🔴", "Mavi": "🔵", "Yeşil": "🟢", "Mor": "🟣"}[x])
 with col2:
-    point_size = st.slider("Nokta boyutu seçin", min_value=1, max_value=10, value=5)
+    point_size = st.slider("Nokta boyutu seçin", min_value=1, max_value=25, value=5)
 
 # Renk seçimini İngilizce'ye çevir (PIL için)
 color_map = {"Siyah": "black", "Kırmızı": "red", "Mavi": "blue", "Yeşil": "green", "Mor": "purple"}

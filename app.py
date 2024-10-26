@@ -5,9 +5,9 @@ from io import BytesIO
 import numpy as np
 from datetime import datetime, date
 
-girl_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/Free Image Cropper female.png"
-boy_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/Free Image Cropper male.png"
-
+# Update these lines at the beginning of your code
+girl_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/b97c4553d08db44e8270d258e274bf4f8e47cc52/Free%20Image%20Cropper%20female.png"
+boy_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/b97c4553d08db44e8270d258e274bf4f8e47cc52/Free%20Image%20Cropper%20male.png"
 def load_image(url):
     response = requests.get(url)
     img = Image.open(BytesIO(response.content))

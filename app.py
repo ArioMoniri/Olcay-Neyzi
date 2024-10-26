@@ -28,37 +28,50 @@ def calculate_age(born, exam_date):
 
 # Kız grafiği için fonksiyonlar
 def girl_age_to_pixel(age):
-    age_left, age_right = 61, 874
-    total_months = (18.75 - 0.25) * 12  # 18.5 yıl = 222 ay
-    total_pixels = age_right - age_left  # 813 piksel
-    months = (age - 0.25) * 12  # Girilen yaşı aya çevir
-    return int(age_left + (months * total_pixels) / total_months)
+    age_left, age_right = 294, 2088
+    years_span = 19 - 1  # From 1 to 19 years
+    total_pixels = age_right - age_left
+    months_from_start = (age - 1) * 12  # Convert to months from 1 year start
+    pixels_per_quarter = 25  # 25 pixels per 3 months
+    pixels_per_month = pixels_per_quarter / 3
+    return int(age_left + (months_from_start * pixels_per_month))
 
 def girl_height_to_pixel(height):
-    height_bottom, height_top = 914, 60
-    return int(height_bottom - ((height - 55) * 17) / 2.5)  # 17 piksel her 2.5 cm için
+    height_bottom, height_top = 2299, 167  # Using left side values
+    height_min, height_max = 23.75, 180  # Height range in cm
+    total_pixels = height_bottom - height_top
+    total_height_range = height_max - height_min
+    pixels_per_unit = 34 / 2.5  # 34 pixels per 2.5 cm
+    return int(height_bottom - ((height - height_min) * pixels_per_unit))
 
 def girl_weight_to_pixel(weight):
-    weight_bottom, weight_top = 1331, 738
-    weight_left, weight_right = 62, 874
-    pixels_per_kg = 7.8
-    return int(weight_bottom - (weight - 1.5) * pixels_per_kg)
+    weight_bottom, weight_top = 3036, 988  # Using right side values
+    weight_min, weight_max = 0, 115  # Weight range in kg
+    total_pixels = weight_bottom - weight_top
+    pixels_per_unit = 45 / 2.5  # 45 pixels per 2.5 kg
+    return int(weight_bottom - (weight * pixels_per_unit))
 
-# Erkek grafiği için fonksiyonlar
 def boy_age_to_pixel(age):
-    age_left, age_right = 96, 900
-    total_months = (18.75 - 0.25) * 12  # 18.5 yıl = 222 ay
+    age_left, age_right = 294, 2088
+    years_span = 19 - 1  # From 1 to 19 years
     total_pixels = age_right - age_left
-    months = (age - 0.25) * 12  # Girilen yaşı aya çevir
-    return int(age_left + (months * total_pixels) / total_months)
+    months_from_start = (age - 1) * 12  # Convert to months from 1 year start
+    pixels_per_quarter = 25  # 25 pixels per 3 months
+    pixels_per_month = pixels_per_quarter / 3
+    return int(age_left + (months_from_start * pixels_per_month))
 
 def boy_height_to_pixel(height):
-    height_bottom, height_top = 951, 63
-    return int(height_bottom - ((height - 57.5) * 17) / 2.5)  # 17 piksel her 2.5 cm için
+    height_bottom, height_top = 2304, 167  # Using left side values
+    height_min, height_max = 15.625, 195  # Height range in cm
+    total_pixels = height_bottom - height_top
+    pixels_per_unit = 30 / 2.5  # 30 pixels per 2.5 cm
+    return int(height_bottom - ((height - height_min) * pixels_per_unit))
 
 def boy_weight_to_pixel(weight):
-    weight_bottom, weight_top = 1339, 776
-    return int(weight_bottom - ((weight - 1) * 6))  # Her kilo için 6 pixel, 1 kg'dan başlıyor
+    weight_bottom, weight_top = 3034, 981  # Using right side values
+    weight_min, weight_max = 0, 143  # Weight range in kg
+    pixels_per_unit = 36 / 2.5  # 36 pixels per 2.5 kg
+    return int(weight_bottom - (weight * pixels_per_unit))
 
 def save_and_download(img, format, dpi=None):
     buf = BytesIO()
@@ -73,20 +86,21 @@ st.title("Türk Çocuklarının Persentil Büyüme Eğrileri")
 
 gender = st.radio("Cinsiyet", ["Kız", "Erkek"])
 
+# Update the main code's input ranges
 if gender == "Kız":
     img = load_image(girl_image_url)
     age_to_pixel = girl_age_to_pixel
     height_to_pixel = girl_height_to_pixel
     weight_to_pixel = girl_weight_to_pixel
-    height_min, height_max = 55.0, 180.0
-    weight_min, weight_max = 1.5, 75.0  # Kızlar için ağırlık aralığı
+    height_min, height_max = 23.75, 180.0
+    weight_min, weight_max = 0.0, 115.0  # Updated weight range for girls
 else:
     img = load_image(boy_image_url)
     age_to_pixel = boy_age_to_pixel
     height_to_pixel = boy_height_to_pixel
     weight_to_pixel = boy_weight_to_pixel
-    height_min, height_max = 57.5, 185.0
-    weight_min, weight_max = 1.0, 98.0  # Erkekler için ağırlık aralığı
+    height_min, height_max = 15.625, 195.0
+    weight_min, weight_max = 0.0, 143.0  # Updated weight range for boys
 
 birth_date = st.date_input("Doğum Tarihi", min_value=date(2000, 1, 1), max_value=date.today())
 

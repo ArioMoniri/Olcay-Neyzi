@@ -5,8 +5,8 @@ from io import BytesIO
 import numpy as np
 from datetime import datetime, date
 
-girl_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/bfe8b7c31670f7166370e5eafa2b6d6504258497/ca3f478a-5f03-4028-bdcb-382178bfc56b.jpeg"
-boy_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/c64087ff36b6eac92d5c77af8b9fe498e59f1c76/WhatsApp%20Image%202024-10-19%20at%2021.45.55.jpeg"
+girl_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/Free Image Cropper female.png"
+boy_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/Free Image Cropper male.png"
 
 def load_image(url):
     response = requests.get(url)

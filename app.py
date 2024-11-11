@@ -215,47 +215,34 @@ color_map = {"Siyah": "black", "Kırmızı": "red", "Mavi": "blue", "Yeşil": "g
 selected_color = color_map[point_color]
 
 # Plot points on chart
+# Plot points on chart
 if st.button("Grafikte Göster"):
     img_with_points = img.copy()
     
     for i, exam in enumerate(st.session_state.exams):
         age = calculate_age(birth_date, exam['date'])
         
-        # Handle different plotting based on chart type
-        if is_achondroplasia:
-            if age >= 2 and age <= 18:  # Akondroplazi grafiği 2-18 yaş aralığında
-                age_pixel_x = acho_age_to_pixel(age)
-                height_pixel_y = acho_height_to_pixel(exam['height'])
-                weight_pixel_y = acho_weight_to_pixel(exam['weight'])
-                
-                if label_option == "Muayene Numarası":
-                    label = str(i+1)
-                elif label_option == "Muayene Tarihi":
-                    label = exam['date'].strftime("%d/%m/%Y")
-                elif label_option == "Özel Etiket":
-                    label = custom_label
-                else:
-                    label = None
-                
-                img_with_points = plot_point(img_with_points, age_pixel_x, height_pixel_y, color=selected_color, size=point_size, label=label)
-                img_with_points = plot_point(img_with_points, age_pixel_x, weight_pixel_y, color=selected_color, size=point_size, label=label)
+        # Use the assigned functions from the selection logic
+        age_pixel_x = age_to_pixel(age)
+        height_pixel_y = height_to_pixel(exam['height'])
+        weight_pixel_y = weight_to_pixel(exam['weight'])
+        
+        if label_option == "Muayene Numarası":
+            label = str(i+1)
+        elif label_option == "Muayene Tarihi":
+            label = exam['date'].strftime("%d/%m/%Y")
+        elif label_option == "Özel Etiket":
+            label = custom_label
         else:
-            if age >= 1 and age <= 19:  # Normal grafik 1-19 yaş aralığında
-                age_pixel_x = age_to_pixel(age)
-                height_pixel_y = height_to_pixel(exam['height'])
-                weight_pixel_y = weight_to_pixel(exam['weight'])
-                
-                if label_option == "Muayene Numarası":
-                    label = str(i+1)
-                elif label_option == "Muayene Tarihi":
-                    label = exam['date'].strftime("%d/%m/%Y")
-                elif label_option == "Özel Etiket":
-                    label = custom_label
-                else:
-                    label = None
-                
-                img_with_points = plot_point(img_with_points, age_pixel_x, height_pixel_y, color=selected_color, size=point_size, label=label)
-                img_with_points = plot_point(img_with_points, age_pixel_x, weight_pixel_y, color=selected_color, size=point_size, label=label)
+            label = None
+        
+        # For Achondroplasia chart, only plot if age is between 2-18
+        # For normal chart, only plot if age is between 1-19
+        should_plot = (is_achondroplasia and 2 <= age <= 18) or (not is_achondroplasia and 1 <= age <= 19)
+        
+        if should_plot:
+            img_with_points = plot_point(img_with_points, age_pixel_x, height_pixel_y, color=selected_color, size=point_size, label=label)
+            img_with_points = plot_point(img_with_points, age_pixel_x, weight_pixel_y, color=selected_color, size=point_size, label=label)
     
     st.session_state.img_with_points = img_with_points
 

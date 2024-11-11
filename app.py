@@ -22,10 +22,14 @@ def plot_point(img, x, y, color="black", size=5, label=None, font_size=12):
     if label:
         try:
             font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
-            draw.text((x+size+2, y-size-2), label, fill=color, font=font)
         except:
-            # Fallback if font not found
-            draw.text((x+size+2, y-size-2), label, fill=color)
+            try:
+                font = ImageFont.truetype("DejaVuSans-Bold.ttf", font_size)
+            except:
+                # If font loading fails, use default font
+                draw.text((x+size+2, y-size-2), label, fill=color)
+                return img
+        draw.text((x+size+2, y-size-2), label, fill=color, font=font)
     return img
 
 def calculate_age(born, exam_date):
@@ -33,7 +37,7 @@ def calculate_age(born, exam_date):
     months = (exam_date.month - born.month) % 12 + (12 if exam_date.day < born.day else 0)
     return age + months / 12
 
-# Normal girl chart functions
+# Normal chart functions
 def girl_age_to_pixel(age):
     age_left, age_right = 294, 2088
     years_span = 19 - 1
@@ -57,7 +61,6 @@ def girl_weight_to_pixel(weight):
     pixels_per_unit = 45 / 2.5
     return int(weight_bottom - (weight * pixels_per_unit))
 
-# Normal boy chart functions
 def boy_age_to_pixel(age):
     age_left, age_right = 294, 2088
     years_span = 19 - 1
@@ -81,7 +84,7 @@ def boy_weight_to_pixel(weight):
     pixels_per_unit = 36 / 2.5
     return int(weight_bottom - (weight * pixels_per_unit))
 
-# Achondroplasia girl chart functions (using same coordinates as normal girl chart for now)
+# Achondroplasia functions - using same pixel calculations as normal charts
 def girl_acho_age_to_pixel(age):
     return girl_age_to_pixel(age)
 
@@ -91,7 +94,6 @@ def girl_acho_height_to_pixel(height):
 def girl_acho_weight_to_pixel(weight):
     return girl_weight_to_pixel(weight)
 
-# Achondroplasia boy chart functions (using same coordinates as normal boy chart for now)
 def boy_acho_age_to_pixel(age):
     return boy_age_to_pixel(age)
 
@@ -129,7 +131,7 @@ if gender == "Kız":
         age_to_pixel = girl_acho_age_to_pixel
         height_to_pixel = girl_acho_height_to_pixel
         weight_to_pixel = girl_acho_weight_to_pixel
-        height_min, height_max = 23.75, 180.0  # Same ranges as normal girl chart
+        height_min, height_max = 23.75, 180.0  # Same as normal girl chart
         weight_min, weight_max = 0.0, 115.0
     else:
         img = load_image(girl_image_url)
@@ -144,7 +146,7 @@ else:
         age_to_pixel = boy_acho_age_to_pixel
         height_to_pixel = boy_acho_height_to_pixel
         weight_to_pixel = boy_acho_weight_to_pixel
-        height_min, height_max = 15.625, 195.0  # Same ranges as normal boy chart
+        height_min, height_max = 15.625, 195.0  # Same as normal boy chart
         weight_min, weight_max = 0.0, 143.0
     else:
         img = load_image(boy_image_url)

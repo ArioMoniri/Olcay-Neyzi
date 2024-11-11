@@ -8,8 +8,8 @@ from datetime import datetime, date
 # Image URLs
 girl_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/b97c4553d08db44e8270d258e274bf4f8e47cc52/Free%20Image%20Cropper%20female.png"
 boy_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/b97c4553d08db44e8270d258e274bf4f8e47cc52/Free%20Image%20Cropper%20male.png"
-girl_image_acho = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/d4591c03f071086910300c9fd93b7d44e673968e/SCR-20241111-kmkt.jpeg"  # Fill this in
-boy_image_acho = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/d4591c03f071086910300c9fd93b7d44e673968e/SCR-20241111-kmkt.jpeg"    # Fill this in
+girl_image_acho = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/d4591c03f071086910300c9fd93b7d44e673968e/SCR-20241111-kmkt.jpeg"
+boy_image_acho = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/d4591c03f071086910300c9fd93b7d44e673968e/SCR-20241111-kmkt.jpeg"
 
 def load_image(url):
     response = requests.get(url)
@@ -20,8 +20,12 @@ def plot_point(img, x, y, color="black", size=5, label=None, font_size=12):
     draw = ImageDraw.Draw(img)
     draw.ellipse([x-size, y-size, x+size, y+size], fill=color)
     if label:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
-        draw.text((x+size+2, y-size-2), label, fill=color, font=font)
+        try:
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
+            draw.text((x+size+2, y-size-2), label, fill=color, font=font)
+        except:
+            # Fallback if font not found
+            draw.text((x+size+2, y-size-2), label, fill=color)
     return img
 
 def calculate_age(born, exam_date):
@@ -29,7 +33,7 @@ def calculate_age(born, exam_date):
     months = (exam_date.month - born.month) % 12 + (12 if exam_date.day < born.day else 0)
     return age + months / 12
 
-# Kız grafiği için fonksiyonlar
+# Normal girl chart functions
 def girl_age_to_pixel(age):
     age_left, age_right = 294, 2088
     years_span = 19 - 1
@@ -43,7 +47,6 @@ def girl_height_to_pixel(height):
     height_bottom, height_top = 2299, 167
     height_min, height_max = 23.75, 180
     total_pixels = height_bottom - height_top
-    total_height_range = height_max - height_min
     pixels_per_unit = 34 / 2.5
     return int(height_bottom - ((height - height_min) * pixels_per_unit))
 
@@ -54,6 +57,7 @@ def girl_weight_to_pixel(weight):
     pixels_per_unit = 45 / 2.5
     return int(weight_bottom - (weight * pixels_per_unit))
 
+# Normal boy chart functions
 def boy_age_to_pixel(age):
     age_left, age_right = 294, 2088
     years_span = 19 - 1
@@ -73,9 +77,29 @@ def boy_height_to_pixel(height):
 def boy_weight_to_pixel(weight):
     weight_bottom, weight_top = 3034, 981
     weight_min, weight_max = 0, 143
-    pixels_per_unit = 36 / 2.5  # 36 pixels per 2.5 kg
+    total_pixels = weight_bottom - weight_top
     pixels_per_unit = 36 / 2.5
     return int(weight_bottom - (weight * pixels_per_unit))
+
+# Achondroplasia girl chart functions (using same coordinates as normal girl chart for now)
+def girl_acho_age_to_pixel(age):
+    return girl_age_to_pixel(age)
+
+def girl_acho_height_to_pixel(height):
+    return girl_height_to_pixel(height)
+
+def girl_acho_weight_to_pixel(weight):
+    return girl_weight_to_pixel(weight)
+
+# Achondroplasia boy chart functions (using same coordinates as normal boy chart for now)
+def boy_acho_age_to_pixel(age):
+    return boy_age_to_pixel(age)
+
+def boy_acho_height_to_pixel(height):
+    return boy_height_to_pixel(height)
+
+def boy_acho_weight_to_pixel(weight):
+    return boy_weight_to_pixel(weight)
 
 def save_and_download(img, format, dpi=None):
     buf = BytesIO()
@@ -102,23 +126,33 @@ with col2:
 if gender == "Kız":
     if is_achondroplasia:
         img = load_image(girl_image_acho)
+        age_to_pixel = girl_acho_age_to_pixel
+        height_to_pixel = girl_acho_height_to_pixel
+        weight_to_pixel = girl_acho_weight_to_pixel
+        height_min, height_max = 23.75, 180.0  # Same ranges as normal girl chart
+        weight_min, weight_max = 0.0, 115.0
     else:
         img = load_image(girl_image_url)
-    age_to_pixel = girl_age_to_pixel
-    height_to_pixel = girl_height_to_pixel
-    weight_to_pixel = girl_weight_to_pixel
-    height_min, height_max = 23.75, 180.0
-    weight_min, weight_max = 0.0, 115.0
+        age_to_pixel = girl_age_to_pixel
+        height_to_pixel = girl_height_to_pixel
+        weight_to_pixel = girl_weight_to_pixel
+        height_min, height_max = 23.75, 180.0
+        weight_min, weight_max = 0.0, 115.0
 else:
     if is_achondroplasia:
         img = load_image(boy_image_acho)
+        age_to_pixel = boy_acho_age_to_pixel
+        height_to_pixel = boy_acho_height_to_pixel
+        weight_to_pixel = boy_acho_weight_to_pixel
+        height_min, height_max = 15.625, 195.0  # Same ranges as normal boy chart
+        weight_min, weight_max = 0.0, 143.0
     else:
         img = load_image(boy_image_url)
-    age_to_pixel = boy_age_to_pixel
-    height_to_pixel = boy_height_to_pixel
-    weight_to_pixel = boy_weight_to_pixel
-    height_min, height_max = 15.625, 195.0
-    weight_min, weight_max = 0.0, 143.0
+        age_to_pixel = boy_age_to_pixel
+        height_to_pixel = boy_height_to_pixel
+        weight_to_pixel = boy_weight_to_pixel
+        height_min, height_max = 15.625, 195.0
+        weight_min, weight_max = 0.0, 143.0
 
 birth_date = st.date_input("Doğum Tarihi", min_value=date(2000, 1, 1), max_value=date.today())
 

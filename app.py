@@ -220,28 +220,48 @@ if st.button("Grafikte Göster"):
     
     for i, exam in enumerate(st.session_state.exams):
         age = calculate_age(birth_date, exam['date'])
-        age_pixel_x = age_to_pixel(age)
-        height_pixel_y = height_to_pixel(exam['height'])
-        weight_pixel_y = weight_to_pixel(exam['weight'])
         
-        if label_option == "Muayene Numarası":
-            label = str(i+1)
-        elif label_option == "Muayene Tarihi":
-            label = exam['date'].strftime("%d/%m/%Y")
-        elif label_option == "Özel Etiket":
-            label = custom_label
+        # Handle different plotting based on chart type
+        if is_achondroplasia:
+            if age >= 2 and age <= 18:  # Akondroplazi grafiği 2-18 yaş aralığında
+                age_pixel_x = acho_age_to_pixel(age)
+                height_pixel_y = acho_height_to_pixel(exam['height'])
+                weight_pixel_y = acho_weight_to_pixel(exam['weight'])
+                
+                if label_option == "Muayene Numarası":
+                    label = str(i+1)
+                elif label_option == "Muayene Tarihi":
+                    label = exam['date'].strftime("%d/%m/%Y")
+                elif label_option == "Özel Etiket":
+                    label = custom_label
+                else:
+                    label = None
+                
+                img_with_points = plot_point(img_with_points, age_pixel_x, height_pixel_y, color=selected_color, size=point_size, label=label)
+                img_with_points = plot_point(img_with_points, age_pixel_x, weight_pixel_y, color=selected_color, size=point_size, label=label)
         else:
-            label = None
-        
-        img_with_points = plot_point(img_with_points, age_pixel_x, height_pixel_y, color=selected_color, size=point_size, label=label)
-        img_with_points = plot_point(img_with_points, age_pixel_x, weight_pixel_y, color=selected_color, size=point_size, label=label)
+            if age >= 1 and age <= 19:  # Normal grafik 1-19 yaş aralığında
+                age_pixel_x = age_to_pixel(age)
+                height_pixel_y = height_to_pixel(exam['height'])
+                weight_pixel_y = weight_to_pixel(exam['weight'])
+                
+                if label_option == "Muayene Numarası":
+                    label = str(i+1)
+                elif label_option == "Muayene Tarihi":
+                    label = exam['date'].strftime("%d/%m/%Y")
+                elif label_option == "Özel Etiket":
+                    label = custom_label
+                else:
+                    label = None
+                
+                img_with_points = plot_point(img_with_points, age_pixel_x, height_pixel_y, color=selected_color, size=point_size, label=label)
+                img_with_points = plot_point(img_with_points, age_pixel_x, weight_pixel_y, color=selected_color, size=point_size, label=label)
     
     st.session_state.img_with_points = img_with_points
 
 # Show and download options
 if 'img_with_points' in st.session_state:
     st.image(st.session_state.img_with_points, caption="Büyüme Eğrisi Üzerinde İşaretlenmiş Noktalar", use_column_width=True)
-
     export_as = st.selectbox("İndirme formatını seçin", ["JPG", "PNG", "TIFF"])
     
     if export_as == "TIFF":

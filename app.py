@@ -8,8 +8,8 @@ from datetime import datetime, date
 # Image URLs
 girl_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/b97c4553d08db44e8270d258e274bf4f8e47cc52/Free%20Image%20Cropper%20female.png"
 boy_image_url = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/b97c4553d08db44e8270d258e274bf4f8e47cc52/Free%20Image%20Cropper%20male.png"
-girl_image_acho = "YOUR_ACHONDROPLASIA_GIRL_IMAGE_URL"  # Fill this in
-boy_image_acho = "YOUR_ACHONDROPLASIA_BOY_IMAGE_URL"    # Fill this in
+girl_image_acho = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/d4591c03f071086910300c9fd93b7d44e673968e/SCR-20241111-kmkt.jpeg"  # Fill this in
+boy_image_acho = "https://raw.githubusercontent.com/ArioMoniri/Olcay-Neyzi/d4591c03f071086910300c9fd93b7d44e673968e/SCR-20241111-kmkt.jpeg"    # Fill this in
 
 def load_image(url):
     response = requests.get(url)

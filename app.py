@@ -27,6 +27,11 @@ def plot_point(img, x, y, color="black", size=5, label=None, font_size=12):
             draw.text((x+size+2, y-size-2), label, fill=color)
     return img
 
+def draw_line(img, x1, y1, x2, y2, color="black", width=2):
+    draw = ImageDraw.Draw(img)
+    draw.line([(x1, y1), (x2, y2)], fill=color, width=width)
+    return img
+
 def calculate_age(born, exam_date):
     age = exam_date.year - born.year - ((exam_date.month, exam_date.day) < (born.month, born.day))
     months = (exam_date.month - born.month) % 12 + (12 if exam_date.day < born.day else 0)
@@ -223,13 +228,17 @@ if label_option == "Özel Etiket":
     custom_label = st.text_input("Özel Etiket Girin")
 
 # Point color and size selection
-col1, col2 = st.columns(2)
+st.subheader("Görselleştirme Seçenekleri")
+col1, col2, col3 = st.columns(3)
 with col1:
-    point_color = st.selectbox("Nokta rengi seçin", 
-                               ["Siyah", "Kırmızı", "Mavi", "Yeşil", "Mor"],
-                               format_func=lambda x: {"Siyah": "⚫", "Kırmızı": "🔴", "Mavi": "🔵", "Yeşil": "🟢", "Mor": "🟣"}[x])
+    connect_points = st.checkbox("Noktaları Çizgi ile Birleştir")
 with col2:
+    point_color = st.selectbox("Nokta rengi seçin", 
+                              ["Siyah", "Kırmızı", "Mavi", "Yeşil", "Mor"],
+                              format_func=lambda x: {"Siyah": "⚫", "Kırmızı": "🔴", "Mavi": "🔵", "Yeşil": "🟢", "Mor": "🟣"}[x])
+with col3:
     point_size = st.slider("Nokta boyutu seçin", min_value=1, max_value=25, value=5)
+
 
 color_map = {"Siyah": "black", "Kırmızı": "red", "Mavi": "blue", "Yeşil": "green", "Mor": "purple"}
 selected_color = color_map[point_color]
@@ -238,11 +247,22 @@ selected_color = color_map[point_color]
 if st.button("Grafikte Göster"):
     img_with_points = img.copy()
     
-    for i, exam in enumerate(st.session_state.exams):
+    # Sort exams by date for proper line connection
+    sorted_exams = sorted(st.session_state.exams, key=lambda x: x['date'])
+    
+    # Store coordinates for line drawing
+    height_coords = []
+    weight_coords = []
+    
+    # Plot points and store coordinates
+    for i, exam in enumerate(sorted_exams):
         age = calculate_age(birth_date, exam['date'])
         age_pixel_x = age_to_pixel(age)
         height_pixel_y = height_to_pixel(exam['height'])
         weight_pixel_y = weight_to_pixel(exam['weight'])
+        
+        height_coords.append((age_pixel_x, height_pixel_y))
+        weight_coords.append((age_pixel_x, weight_pixel_y))
         
         if label_option == "Muayene Numarası":
             label = str(i+1)
@@ -253,8 +273,24 @@ if st.button("Grafikte Göster"):
         else:
             label = None
         
-        img_with_points = plot_point(img_with_points, age_pixel_x, height_pixel_y, color=selected_color, size=point_size, label=label)
-        img_with_points = plot_point(img_with_points, age_pixel_x, weight_pixel_y, color=selected_color, size=point_size, label=label)
+        img_with_points = plot_point(img_with_points, age_pixel_x, height_pixel_y, 
+                                   color=color_map[point_color], size=point_size, label=label)
+        img_with_points = plot_point(img_with_points, age_pixel_x, weight_pixel_y, 
+                                   color=color_map[point_color], size=point_size, label=label)
+    
+    # Draw lines connecting points if option is selected
+    if connect_points and len(height_coords) > 1:
+        for i in range(len(height_coords) - 1):
+            # Connect height points
+            img_with_points = draw_line(img_with_points,
+                                      height_coords[i][0], height_coords[i][1],
+                                      height_coords[i+1][0], height_coords[i+1][1],
+                                      color=color_map[point_color])
+            # Connect weight points
+            img_with_points = draw_line(img_with_points,
+                                      weight_coords[i][0], weight_coords[i][1],
+                                      weight_coords[i+1][0], weight_coords[i+1][1],
+                                      color=color_map[point_color])
     
     st.session_state.img_with_points = img_with_points
 

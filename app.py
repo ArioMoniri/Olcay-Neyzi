@@ -94,19 +94,33 @@ def girl_acho_weight_to_pixel(weight):
 def boy_acho_age_to_pixel(age):
     age_left = 133  # Start point
     pixels_per_year = 45  # 45 pixels per year
+    age_left, age_right = 133, 944
+    years_span = 19 - 1
+    total_pixels = age_right - age_left
+    months_from_start = (age - 1) * 12
+    pixels_per_quarter = 11.25
+    pixels_per_month = pixels_per_quarter / 3
     return int(age_left + ((age - 1) * pixels_per_year))
 
 def boy_acho_height_to_pixel(height):
-    height_bottom = 1041  # Bottom point
-    height_top = 76  # Top point
+    height_bottom = 1041  # Bottom point (15.5 cm)
+    height_top = 76     # Top point (195 cm)
+    height_min = 15.625   # Minimum height
+    height_max = 195    # Maximum height
     pixels_per_10cm = 52  # 52 pixels per 10 cm
-    total_height_range = height_bottom - height_top
-    return int(height_bottom - (height * (pixels_per_10cm / 10)))
+    total_height_range = height_max - height_min
+    total_pixels = height_bottom - height_top
+    pixels_per_unit = 52 / 2.5
+    return int(height_bottom - ((height - height_min) * (total_pixels / total_height_range)))
+
 
 def boy_acho_weight_to_pixel(weight):
     weight_bottom = 1370  # Bottom point
     weight_top = 445  # Top point
     pixels_per_10kg = 64  # 64 pixels per 10 kg
+    weight_min, weight_max = 0, 143
+    total_pixels = weight_bottom - weight_top
+    pixels_per_unit = 64 / 2.5
     return int(weight_bottom - (weight * (pixels_per_10kg / 10)))
 
 def save_and_download(img, format, dpi=None):
@@ -152,8 +166,8 @@ else:
         age_to_pixel = boy_acho_age_to_pixel
         height_to_pixel = boy_acho_height_to_pixel
         weight_to_pixel = boy_acho_weight_to_pixel
-        height_min, height_max = 40.0, 160.0  # Adjusted for achondroplasia range
-        weight_min, weight_max = 0.0, 80.0 
+        height_min, height_max = 15.625, 195.0
+        weight_min, weight_max = 0.0, 143.0
     else:
         img = load_image(boy_image_url)
         age_to_pixel = boy_age_to_pixel
